@@ -37,13 +37,13 @@
 #define pinkyPin            3
 #define ringPin             5
 
-#define BatLevelMax         990           //you need to find all of these values on your own
+#define BatLevelMax         990           
 
-#define JoyXMin             0             //check on the utils folder for sketches and instructions
-#define JoyXMax             1023          //that help on getting these values
-#define JoyYMin             0             //YOU NEED TO DO THIS FOR BOTH CONTROLLERS
-#define JoyYMax             1023          //if you use these values without changing them you MAY
-#define JoyXDeadZoneMin     487           //get stick drift
+#define JoyXMin             0             //These values are for PS4 analog sticks
+#define JoyXMax             1023          //different sticks might have different maximums and minimums
+#define JoyYMin             0             //along with different deadzones, if your controller drifts
+#define JoyYMax             1023          //you'll need to increase the deadzones
+#define JoyXDeadZoneMin     487           
 #define JoyXDeadZoneMax     537
 #define JoyYDeadZoneMin     487
 #define JoyYDeadZoneMax     537
