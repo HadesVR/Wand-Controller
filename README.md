@@ -33,6 +33,7 @@ Hardware needed for each controller is the following:
 | 22pF capacitor | Used for the crystal oscillator. | - | 2 | 
 | 12MHz crystal | Main crystal for the MCU | if you can't get a 12MHz one, a 16MHz one ***might*** work. | 1 | 
 | 1x5 male pin header | For ICSP | ***This one goes on the bottom of the board right next to the battery and you should solder it before the NRF24*** | 1 | 
+| PCB Switch | To turn on and off the controller. | - | 1 |
 | White ping pong ball | Used to difuse the LED's light for 6dof tracking | Any will do as long as it's white and 40mm in diameter | 1 |
 
 *BNO085 is better but also more expensive and I haven't written any code for it.
