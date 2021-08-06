@@ -48,6 +48,14 @@ Also needed is an arduino to use as a programmer with the ArduinoISP code on it.
 
 #### You'll also need the 3d printable shell which isn't out yet.
 
+## Assembly
+
+Order of components isn't super important though you'll want to solder the 1x5 pin header on the bottom of the board *before* you solder the NRF24L01 RF module.
+
+The IMU needs to lay as flat as possible against the pcb, to do this you'll need to remove the plastic pin spacers on the header under the IMU. It doesn't have to be perfect but if the IMU is at an angle your controllers won't be aligned with the IRL angle in VR.
+
+You'll need to cut the pins under the board as short as possible or else you won't be able to solder the battery holder, since it goes on top of them. Again, it doesn't have to be perfect it just has to be enough for the battery holder pins to go through the pcb and be soldered on the other side. The battery holder is obviously soldered last since it goes under most components.
+
 ## Uploading the firmware
 
 Before uploading the firmware you'll need something that lets you use the atmega328p with a 12MHz crystal, I recommend using [MiniCore][MiniCore], instructions on how to add it to your arduino IDE are right [here][installMiniCore].
