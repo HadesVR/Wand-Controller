@@ -26,8 +26,8 @@
 #define CALPIN              8               //pin to start mag calibration at power on
 #define LEDPIN              7
 
-#define SysPin              0
-#define MenuPin             4
+#define SysPin              4
+#define MenuPin             0
 #define GripPin             1
 #define JoyXPin             A1
 #define JoyYPin             A2
@@ -37,13 +37,13 @@
 #define pinkyPin            3
 #define ringPin             5
 
-#define BatLevelMax         990           
+#define BatLevelMax         990
 
 #define JoyXMin             0             //These values are for PS4 analog sticks
 #define JoyXMax             1023          //different sticks might have different maximums and minimums
 #define JoyYMin             0             //along with different deadzones, if your controller drifts
 #define JoyYMax             1023          //you'll need to increase the deadzones
-#define JoyXDeadZoneMin     487           
+#define JoyXDeadZoneMin     487
 #define JoyXDeadZoneMax     537
 #define JoyYDeadZoneMin     487
 #define JoyYDeadZoneMax     537
@@ -52,7 +52,6 @@
 uint64_t Pipe = 0xF0F0F0F0D2LL; //left
 
 // #define SERIAL_DEBUG
-#define RADIO_DATA_RATE     10              //send data every 10ms for a 100hz update rate.
 //==========================================================================================================
 
 float magCalibration[3]; // factory mag calibration
@@ -309,9 +308,6 @@ const unsigned char dmp_memory[DMP_CODE_SIZE] PROGMEM = {
 #define HTC_GripClick   0x0008
 #define HTC_ThumbstickTouch 0x0010
 
-int period = RADIO_DATA_RATE;
-unsigned long TimeNow = 0;
-
 bool joyClickInvert = true;
 bool middleBTNPressed = false;
 
@@ -323,7 +319,7 @@ struct ctrlData {
   int16_t accX;
   int16_t accY;
   int16_t accZ;
-  uint32_t BTN;
+  uint16_t BTN;
   uint8_t  trigg;
   int8_t  axisX;
   int8_t  axisY;
@@ -334,6 +330,7 @@ struct ctrlData {
   uint8_t  fingerMiddle;
   uint8_t  fingerRing;
   uint8_t  fingerPinky;
+  uint16_t Data;
 };
 ctrlData data;
 
@@ -482,6 +479,8 @@ void setup() {
   data.fingerRing = 0;
   data.fingerPinky = 0;
 
+  data.Data = 0x614;
+
   digitalWrite(LEDPIN, LOW);
 }
 
@@ -491,93 +490,90 @@ void loop() {
 
   //Serial.print("qw: "); Serial.print(q._f.w); Serial.print(" qx: "); Serial.print(q._f.x); Serial.print(" qy: "); Serial.print(q._f.y); Serial.print(" qz: "); Serial.println(q._f.z);
 
-  if (millis() > TimeNow + period) {
 
-    if (!digitalRead(CALPIN)) {
-      if (!middleBTNPressed) {
-        middleBTNPressed = true;
-        if (joyClickInvert) {
-          joyClickInvert = false;
-        } else {
-          joyClickInvert = true;
-        }
+  if (!digitalRead(CALPIN)) {
+    if (!middleBTNPressed) {
+      middleBTNPressed = true;
+      if (joyClickInvert) {
+        joyClickInvert = false;
+      } else {
+        joyClickInvert = true;
       }
     }
-    else {
-      middleBTNPressed = false;
-    }
-
-    TimeNow = millis();
-    int btn = 0;
-
-    axisX = analogRead(JoyXPin);
-    axisY = analogRead(JoyYPin);
-
-    if (axisX > JoyXDeadZoneMax || axisX < JoyXDeadZoneMin) {
-      data.axisX = -map(axisX, JoyXMin, JoyXMax, -127, 127);
-      if (joyClickInvert && digitalRead(JoyClickPin)) {
-        btn |= HTC_ThumbstickClick;
-      }
-      btn |= HTC_ThumbstickTouch;
-    } else {
-      data.axisX = 0;
-    }
-
-    if (axisY > JoyYDeadZoneMax || axisY < JoyYDeadZoneMin) {
-      data.axisY = -map(axisY, JoyYMin, JoyYMax, -127, 127);
-      if (joyClickInvert && digitalRead(JoyClickPin)) {
-        btn |= HTC_ThumbstickClick;
-      }
-      btn |= HTC_ThumbstickTouch;
-    } else {
-      data.axisY = 0;
-    }
-
-    data.trigg = (map(analogRead(TriggerPin), 1024, 0, 0, 255));
-
-    if (!digitalRead(SysPin)) {
-      btn |= HTC_SysClick;
-    }
-    if (!digitalRead(MenuPin)) {
-      btn |= HTC_MenuClick;
-    }
-    if (!digitalRead(GripPin)) {
-      btn |= HTC_GripClick;
-    }
-
-    if (!joyClickInvert) {
-      if (!digitalRead(JoyClickPin)) {
-        btn |= HTC_ThumbstickClick;
-      }
-    }
-
-    if(!digitalRead(pinkyPin)){
-      data.fingerPinky = 255;
-    }else{
-      data.fingerPinky = 0;
-    }
-    
-    if(!digitalRead(ringPin)){
-      data.fingerRing = 255;
-    }else{
-      data.fingerRing = 0;
-    }
-
-    data.BTN = btn;
-    data.vBAT = map(analogRead(VbatPin), 787, BatLevelMax, 0, 255);
-    data.qW = (int16_t)(q._f.w * 32767.f);
-    data.qX = (int16_t)(q._f.y * 32767.f);
-    data.qY = (int16_t)(q._f.z * 32767.f);
-    data.qZ = (int16_t)(q._f.x * 32767.f);
-    data.accX = ax;
-    data.accY = ay;
-    data.accZ = az;
-    radio.stopListening();
-    radio.write(&data, sizeof(ctrlData));
-    radio.startListening();
+  }
+  else {
+    middleBTNPressed = false;
   }
 
+  int btn = 0;
+
+  axisX = analogRead(JoyXPin);
+  axisY = analogRead(JoyYPin);
+
+  if (axisX > JoyXDeadZoneMax || axisX < JoyXDeadZoneMin) {
+    data.axisX = -map(axisX, JoyXMin, JoyXMax, -127, 127);
+    if (joyClickInvert && digitalRead(JoyClickPin)) {
+      btn |= HTC_ThumbstickClick;
+    }
+    btn |= HTC_ThumbstickTouch;
+  } else {
+    data.axisX = 0;
+  }
+
+  if (axisY > JoyYDeadZoneMax || axisY < JoyYDeadZoneMin) {
+    data.axisY = -map(axisY, JoyYMin, JoyYMax, -127, 127);
+    if (joyClickInvert && digitalRead(JoyClickPin)) {
+      btn |= HTC_ThumbstickClick;
+    }
+    btn |= HTC_ThumbstickTouch;
+  } else {
+    data.axisY = 0;
+  }
+
+  data.trigg = (map(analogRead(TriggerPin), 1024, 0, 0, 255));
+
+  if (!digitalRead(SysPin)) {
+    btn |= HTC_SysClick;
+  }
+  if (!digitalRead(MenuPin)) {
+    btn |= HTC_MenuClick;
+  }
+  if (!digitalRead(GripPin)) {
+    btn |= HTC_GripClick;
+  }
+
+  if (!joyClickInvert) {
+    if (!digitalRead(JoyClickPin)) {
+      btn |= HTC_ThumbstickClick;
+    }
+  }
+
+  if (!digitalRead(pinkyPin)) {
+    data.fingerPinky = 255;
+  } else {
+    data.fingerPinky = 0;
+  }
+
+  if (!digitalRead(ringPin)) {
+    data.fingerRing = 255;
+  } else {
+    data.fingerRing = 0;
+  }
+
+  data.BTN = btn;
+  data.vBAT = map(analogRead(VbatPin), 787, BatLevelMax, 0, 255);
+  data.qW = (int16_t)(q._f.w * 32767.f);
+  data.qX = (int16_t)(q._f.y * 32767.f);
+  data.qY = (int16_t)(q._f.z * 32767.f);
+  data.qZ = (int16_t)(q._f.x * 32767.f);
+  data.accX = ax;
+  data.accY = ay;
+  data.accZ = az;
+  radio.stopListening();
+  radio.write(&data, sizeof(ctrlData));
+  radio.startListening();
 }
+
 
 void initMPU()
 {
@@ -942,11 +938,11 @@ int readDMP(long *quat)
   az = ((short)fifo_data[ii + 4] << 8) | fifo_data[ii + 5];
   ii += 6;
 
-/*
-  ax = (float)accel[1] * 4.0 / 32768.0;
-  ay = (float)accel[0] * 4.0 / 32768.0;
-  az = (float)accel[2] * 4.0 / 32768.0;
-*/
+  /*
+    ax = (float)accel[1] * 4.0 / 32768.0;
+    ay = (float)accel[0] * 4.0 / 32768.0;
+    az = (float)accel[2] * 4.0 / 32768.0;
+  */
 
   return 0;
 }
