@@ -8,6 +8,14 @@ The boards use an atmega328p as their core, an MPU9250 as the IMU and an NRF24L0
 
 ![1](img/1.png)
 
+# IMPORTANT NOTICE
+If you've had these boards made before JAN/2022 and they weren't working properly or at all 
+* check if they're running the latest firmware and you're running the latest driver version
+* solder a jumper wire between the ground pin of the regulator and the R3/R7 resistor. there's a bit of an error on the board files prior to JAN/2022 in which your MCU/3.3v regulator might not be properly grounded. The jumper cable has to be wired like this:
+
+![WARNING](img/WARNING.png)
+
+
 ## Hardware needed
 
 Hardware needed for each controller is the following:
