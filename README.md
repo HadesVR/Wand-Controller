@@ -92,11 +92,19 @@ And click upload. Uploading through the Arduino as ISP is a bit slower than regu
 
 If you've just uploaded your code your controller will be slowly flashing, meaning you need to calibrate the controller before using it, to do that press and hold the middle button for a few seconds until the LED flashes quickly for around a second to let you know you're entering into calibration mode.
 
-If you've already calibrated the magnetometer on your controller but want to do it again you need to turn off your controller, and turn it on while holding the calibration button. The LED will flash quickly a couple times to let you know you're entering into calibration mode.
+If you've already calibrated the magnetometer on your controller but want to do it again you need to turn off your controller, and turn it on while holding the calibration button. The LED will flash quickly a couple times to let you know you're entering into magnetic calibration mode.
 
 Once you've entered into calibration mode the LED will stay solid for around 2 seconds and then turn off. once it turns off you'll need to wave the controller in a figure 8 pattern while slowly rotating it until the LED turns back on, this takes around 30 seconds.
 
 Once the LED turns back on the calibration values will be saved into EEPROM and the LED will start flashing quickly, once it does you just have to turn the controller off and on again and if the LED stays solid then you've successfully calibrated the magnetometer on your controller.
+
+## Accelerometer calibration
+
+While not 100% necessary, it's recommended you calibrate the accelerometer of your controller. To do this, turn on the controller while holding the calibration button alongside the system button (look at the diagram below to know which one it is). The LED will flash slowly 3 times to let you know you've entered Accelerometer calibration mode.
+
+Once into the calibration mode, the LED will turn off and you'll have 5 seconds to put your controller on a flat surface (I recommend the floor). Once on the flat surface you'll just have to wait for a few seconds for the LED to turn back on to signify the calibration is done. If you didn't place the controller on a flat surface before the LED turned on you'll need to redo the calibration.
+
+Once the LED turns back on the calibration values will be saved into EEPROM and the LED will start flashing quickly, once it does you just have to turn the controller off and on again.
 
 ## Controller bindings
 
