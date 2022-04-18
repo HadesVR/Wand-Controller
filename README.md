@@ -4,6 +4,8 @@ The HadesVR wand controllers are a DIY set of controllers that aim to emulate th
 
 They're made out of 3d printable shells (Not out yet) and a custom PCB board that comes with both controllers and a [HadesVR Basic HMD PCB](https://github.com/HadesVR/Basic-HMD-PCB) to get you started with DIY VR. These boards were designed to be easy to put together, using only through hole parts and commonly available modules.
 
+You can get the Controller + HMD combo boards made on [PCBWay](https://www.pcbway.com/setinvite.aspx?inviteid=398979) for 5$ + shipping since the board is under 100mmx100mm. You can also get 5$ off if you're signing up for the first time which means you'd only be paying for shipping. I also get a small kick back at no expense of yours if you use the referral link from above, supporting the project.
+
 The boards use an atmega328p as their core, an MPU9250 as the IMU and an NRF24L01 to transmit all data to the headset, there is planned support for some basic individual finger tracking but as of right now it is not supported. The controllers also have 3 spare GPIO pins that support PWM (pins mapped to PD3,PD5 and PD6) for tinkerers that want to add extra features like an RGB LED or even individual finger tracking.
 
 ![1](img/1.png)
