@@ -76,7 +76,7 @@ You'll need to cut the pins under the board as short as possible or else you won
 ## Uploading the firmware
 
 Before uploading the firmware you'll need something that lets you use the atmega328p with a 12MHz crystal, I recommend using [MiniCore][MiniCore], instructions on how to add it to your arduino IDE are right [here][installMiniCore].
-
+You'll also need the [FastIMU Arduino library](https://github.com/LiquidCGS/FastIMU) and the [RF24 Arduino Library](https://github.com/nRF24/RF24) (Both available through the Arduino library manager)
 You'll need an Arduino with the ArduinoISP code loaded onto it and have it connected to the controller like this:
 
 ![2](img/2.png)
