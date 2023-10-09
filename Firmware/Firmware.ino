@@ -26,19 +26,9 @@
 //#define SERIAL_DEBUG
 #define IMU_ADDRESS     0x68                // You can find it out by using the IMUIdentifier example
 MPU9250 IMU;                                // IMU type
-#define CALPIN              8               //pin to start mag calibration at power on
-#define LEDPIN              7
 
-#define SysPin              0
-#define MenuPin             4
-#define GripPin             1
-#define JoyXPin             A1
-#define JoyYPin             A2
-#define JoyClickPin         2
-#define TriggerPin          A3
-#define VbatPin             A0
-#define pinkyPin            3
-#define ringPin             5
+//#define RIGHT_CONTROLLER                    // Leave the desired controller role uncommented to set.
+//#define LEFT_CONTROLLER
 
 #define BatLevelMax         990
 #define JoyXMin             0             //These values are for PS4 analog sticks
@@ -49,6 +39,37 @@ MPU9250 IMU;                                // IMU type
 #define JoyXDeadZoneMax     537
 #define JoyYDeadZoneMin     487
 #define JoyYDeadZoneMax     537
+
+//==========================================================================================================
+//************************************* Pin definitions ****************************************************
+//==========================================================================================================
+#define NRFCE               A0
+#define VbatPin             A1
+//Menu/Sys                  A2
+#define JoyYPin             A3
+//SDA                       A4
+//SCL                       A5
+#define TriggerPin          A6
+#define JoyXPin             A7
+
+#define GripPin             0
+//TXO                       1
+#define JoyBtnPin           2
+#define pinkyFingerPin      3
+#define ringFingerPin       4
+#define middleFingerPin     5  
+//Menu/Sys                  6  
+#define Led1Pin             7
+#define ModePin             8
+#define Led2Pin             9
+
+#ifdef RIGHT_CONTROLLER
+#define MenuPin             A2
+#define SysPin              6  
+#else
+#define MenuPin             6
+#define SysPin              A2 
+#endif
 //==========================================================================================================
 calData calib =
 { false,                   //data valid?
@@ -100,9 +121,19 @@ bool joyTouch = false;
 //==========================================================================================================
 //**************************************** RF Data stuff ***************************************************
 //==========================================================================================================
-RF24 radio(9, 10);
-//uint64_t Pipe = 0xF0F0F0F0E1LL; //right
+RF24 radio(NRFCE, 10);
+
+#ifdef RIGHT_CONTROLLER
+uint64_t Pipe = 0xF0F0F0F0E1LL; //right
+#warning Compiling Right controller role...
+
+#elif defined(LEFT_CONTROLLER)
 uint64_t Pipe = 0xF0F0F0F0D2LL; //left
+#warning Compiling Left controller role...
+
+#else
+#error No Valid controller role selected!
+#endif
 //==========================================================================================================
 //**************************************** IMU variables ***************************************************
 //==========================================================================================================
@@ -119,24 +150,32 @@ float rot = 0.f;
 
 bool joyClickInvert = true;
 bool middleBTNPressed = false;
-
+int batteryPercent = 100;
 void setup() {
   Wire.begin();
   Wire.setClock(400000); //400khz clock
   pinMode(SysPin, INPUT_PULLUP);
   pinMode(MenuPin, INPUT_PULLUP);
   pinMode(GripPin, INPUT_PULLUP);
-  pinMode(JoyClickPin, INPUT_PULLUP);
+  pinMode(JoyBtnPin, INPUT_PULLUP);
   pinMode(TriggerPin, INPUT_PULLUP);
-  pinMode(pinkyPin, INPUT_PULLUP);
-  pinMode(ringPin, INPUT_PULLUP);
-
-  pinMode(CALPIN, INPUT_PULLUP);
-  pinMode(LEDPIN, OUTPUT);
-  digitalWrite(LEDPIN, HIGH);
+  pinMode(middleFingerPin, INPUT_PULLUP);
+  pinMode(ringFingerPin, INPUT_PULLUP);
+  pinMode(pinkyFingerPin, INPUT_PULLUP);
+  pinMode(ModePin, INPUT_PULLUP);
+  pinMode(Led1Pin, OUTPUT);
+  pinMode(Led2Pin, OUTPUT);
+  digitalWrite(Led1Pin, HIGH);
+  digitalWrite(Led2Pin, HIGH);
 
 #ifdef SERIAL_DEBUG
   Serial.begin(38400);
+  Serial.println("[INFO]\tSerial debug active.");
+  #ifdef RIGHT_CONTROLLER
+  Serial.println("[INFO]\tController role: RIGHT");
+  #else
+  Serial.println("[INFO]\tController role: LEFT");
+  #endif
 #endif
 
   radio.begin();
@@ -150,28 +189,29 @@ void setup() {
   int err = IMU.init(calib, IMU_ADDRESS);
   if (err != 0)
   {
-    Serial.print("IMU ERROR: ");
+    Serial.print("[ERROR]\t Couldn't initialize IMU of type: ");
+    Serial.print(IMU.IMUType());
+    Serial.print(", Got error: ");
     Serial.println(err);
     while (true) {
-      digitalWrite(LEDPIN, LOW);
-      delay(1000);
-      digitalWrite(LEDPIN, HIGH);
-      delay(1000);
+      blinkLEDS(1000, 1, false);
     }
+  }
+  else{
+    Serial.print("[INFO]\t");
+    Serial.print(IMU.IMUName());
+    Serial.println(" Initialized.");
   }
   if (!radio.isChipConnected())
   {
-    Serial.println("NRF24L01 Module not detected!");
+    Serial.println("[ERROR]\tCould not initialize NRF24L01");
     while (true) {
-      digitalWrite(LEDPIN, LOW);
-      delay(200);
-      digitalWrite(LEDPIN, HIGH);
-      delay(200);
+      blinkLEDS(200, 1, false);
     }
   }
   else
   {
-    Serial.println("NRF24L01 Module up and running!");
+    Serial.println("[INFO]\tNRF24L01 Initialized.");
   }
 
   EEPROM.get(210, calib);
@@ -179,64 +219,42 @@ void setup() {
   bool calDone = !calib.valid;                             //check if calibration values are on flash
   while (calDone)
   {
-    Serial.print("Calibration not done!");
-    if (!digitalRead(CALPIN))
+    Serial.println("[INFO]\tCalibration not done!");
+    if (!digitalRead(ModePin))
     {
       calDone = false;
     }
-    digitalWrite(LEDPIN, HIGH);
-    delay(1000);
-    digitalWrite(LEDPIN, LOW);
-    delay(200);
+    blinkLEDS(200,1,true);
   }
-  if (!digitalRead(CALPIN)) {
+  if (!digitalRead(ModePin)) {
     if (!digitalRead(MenuPin)) {
-      digitalWrite(LEDPIN, HIGH);
-      delay(500);
-      digitalWrite(LEDPIN, LOW);
-      delay(500);
-      digitalWrite(LEDPIN, HIGH);
-      Serial.println("Accelerometer and gyroscope calibration mode.");
-      Serial.println("Keep IMU completely still on flat and level surface.");
+      blinkLEDS(500, 1, false);
+      Serial.println("[INFO]\tAccelerometer and gyroscope calibration mode.");
+      Serial.println("[INFO]\tKeep IMU completely still on flat and level surface.");
       delay(8000);
       IMU.calibrateAccelGyro(&calib);
-      Serial.println("Accel & Gyro calibration complete!");
-      digitalWrite(LEDPIN, HIGH);
-      delay(100);
-      digitalWrite(LEDPIN, LOW);
-      delay(100);
-      digitalWrite(LEDPIN, HIGH);
+      Serial.println("[INFO]\tAccel & Gyro calibration complete!");
+
       if (!IMU.hasMagnetometer()) {
         calib.valid = true;
+        blinkLEDS(500, 1, false);
       }
     }
     else {
       if (IMU.hasMagnetometer()) {
-        digitalWrite(LEDPIN, HIGH);
-        delay(500);
-        digitalWrite(LEDPIN, LOW);
-        delay(500);
-        digitalWrite(LEDPIN, HIGH);
-        delay(500);
-        digitalWrite(LEDPIN, LOW);
-        delay(500);
-        digitalWrite(LEDPIN, HIGH);
-        Serial.println("Magnetic calibration mode.");
-        Serial.println("Move IMU in figure 8 until done.");
+        blinkLEDS(500, 2, false);
+        Serial.println("[INFO]\tMagnetic calibration mode.");
+        Serial.println("[INFO]\tMove IMU in figure 8 until done.");
         delay(3000);
         IMU.calibrateMag(&calib);
         calib.valid = true;
-        Serial.println("Magnetic calibration complete!");
+        Serial.println("[INFO]\tMagnetic calibration complete!");
         delay(1000);
-        digitalWrite(LEDPIN, HIGH);
-        delay(100);
-        digitalWrite(LEDPIN, LOW);
-        delay(100);
-        digitalWrite(LEDPIN, HIGH);
+        blinkLEDS(500, 1, false);
       }
     }
     printCalibration();
-    Serial.println("Writing values to EEPROM!");
+    Serial.println("[INFO]\tWriting values to EEPROM!");
     EEPROM.put(210, calib);
     delay(3000);
   }
@@ -264,16 +282,17 @@ void setup() {
   err = IMU.init(calib, IMU_ADDRESS);
   if (err != 0)
   {
-    Serial.print("IMU ERROR: ");
+    Serial.print("[ERROR]\tIMU ERROR: ");
     Serial.println(err);
     while (true);
   }
 
-  digitalWrite(LEDPIN, LOW);//turn on LED
+  digitalWrite(Led1Pin, LOW);//turn on LEDS
+  digitalWrite(Led2Pin, LOW);
 }
 
-void loop() {
-
+void loop() 
+{
   IMU.update();
   IMU.getAccel(&IMUAccel);
   IMU.getGyro(&IMUGyro);
@@ -291,7 +310,7 @@ void loop() {
   rot *= 0.97f;
   filter.changeBeta(rot * (1.5 - 0.1) / 64000 + 0.1);
 
-  if (!digitalRead(CALPIN)) {
+  if (!digitalRead(ModePin)) {
     if (!middleBTNPressed) {
       middleBTNPressed = true;
       if (joyClickInvert) {
@@ -311,7 +330,7 @@ void loop() {
 
   if (axisX > JoyXDeadZoneMax || axisX < JoyXDeadZoneMin) {
     data.axisX = -map(axisX, JoyXMin, JoyXMax, -127, 127);
-    if (joyClickInvert && digitalRead(JoyClickPin)) {
+    if (joyClickInvert && digitalRead(JoyBtnPin)) {
       btn |= HTC_ThumbstickClick;
     }
     btn |= HTC_ThumbstickTouch;
@@ -321,7 +340,7 @@ void loop() {
 
   if (axisY > JoyYDeadZoneMax || axisY < JoyYDeadZoneMin) {
     data.axisY = -map(axisY, JoyYMin, JoyYMax, -127, 127);
-    if (joyClickInvert && digitalRead(JoyClickPin)) {
+    if (joyClickInvert && digitalRead(JoyBtnPin)) {
       btn |= HTC_ThumbstickClick;
     }
     btn |= HTC_ThumbstickTouch;
@@ -330,7 +349,7 @@ void loop() {
   }
 
   if (!joyClickInvert) {
-    if (!digitalRead(JoyClickPin)) {
+    if (!digitalRead(JoyBtnPin)) {
       btn |= HTC_ThumbstickClick;
     }
   }
@@ -343,30 +362,32 @@ void loop() {
   if (!digitalRead(MenuPin)) {
     btn |= HTC_MenuClick;
   }
-  if (!digitalRead(JoyClickPin)) {
+  if (!digitalRead(JoyBtnPin)) {
     btn |= HTC_ThumbstickClick;
   }
   if (!digitalRead(GripPin)) {
     btn |= HTC_GripClick;
   }
 
-
-  if (!digitalRead(pinkyPin)) {
-    data.fingerPinky = 255;
+  if (!digitalRead(middleFingerPin)) {
+    data.fingerMiddle = 255;
   } else {
-    data.fingerPinky = 0;
+    data.fingerRing = 0;
   }
-
-  if (!digitalRead(ringPin)) {
+  if (!digitalRead(ringFingerPin)) {
     data.fingerRing = 255;
   } else {
     data.fingerRing = 0;
   }
-
-
+  if (!digitalRead(pinkyFingerPin)) {
+    data.fingerPinky = 255;
+  } else {
+    data.fingerPinky = 0;
+  }
+  
   data.BTN = btn;
   data.trackY = (trackoutput * 127);
-  data.vBAT = (map(analogRead(VbatPin), 787, BatLevelMax, 0, 255));
+  data.vBAT = getBattPercent();
   data.qW = (int16_t)(filter.getQuatW() * 32767.f);
   data.qX = (int16_t)(filter.getQuatY() * 32767.f);
   data.qY = (int16_t)(filter.getQuatZ() * 32767.f);
@@ -374,33 +395,36 @@ void loop() {
   data.accX = (short)(IMUAccel.accelX * 2048);
   data.accY = (short)(IMUAccel.accelY * 2048);
   data.accZ = (short)(IMUAccel.accelZ * 2048);
-
   radio.stopListening();
   radio.write(&data, sizeof(ctrlData));
   radio.startListening();
 }
 void printCalibration()
 {
-  Serial.println("Accel biases X/Y/Z: ");
+  Serial.println("[INFO]\tAccel biases X/Y/Z: ");
+  Serial.print("[INFO]\t");
   Serial.print(calib.accelBias[0]);
   Serial.print(", ");
   Serial.print(calib.accelBias[1]);
   Serial.print(", ");
   Serial.println(calib.accelBias[2]);
-  Serial.println("Gyro biases X/Y/Z: ");
+  Serial.println("[INFO]\tGyro biases X/Y/Z: ");
+  Serial.print("[INFO]\t");
   Serial.print(calib.gyroBias[0]);
   Serial.print(", ");
   Serial.print(calib.gyroBias[1]);
   Serial.print(", ");
   Serial.println(calib.gyroBias[2]);
   if (IMU.hasMagnetometer()) {
-    Serial.println("Mag biases X/Y/Z: ");
+    Serial.println("[INFO]\tMag biases X/Y/Z: ");
+    Serial.print("[INFO]\t");
     Serial.print(calib.magBias[0]);
     Serial.print(", ");
     Serial.print(calib.magBias[1]);
     Serial.print(", ");
     Serial.println(calib.magBias[2]);
-    Serial.println("Mag Scale X/Y/Z: ");
+    Serial.println("[INFO]\tMag Scale X/Y/Z: ");
+    Serial.print("[INFO]\t");
     Serial.print(calib.magScale[0]);
     Serial.print(", ");
     Serial.print(calib.magScale[1]);
@@ -408,4 +432,48 @@ void printCalibration()
     Serial.println(calib.magScale[2]);
   }
   delay(5000);
+}
+
+void blinkLEDS(int speed, int times, bool pattern){
+  if(pattern){
+    for (int i = 0; i <= times; i++) {
+      digitalWrite(Led1Pin, LOW);
+      digitalWrite(Led2Pin, LOW);
+      delay(speed);
+      digitalWrite(Led1Pin, HIGH);
+      digitalWrite(Led2Pin, HIGH);
+      delay(speed);
+    }
+    delay(speed*4);
+    return;
+    }
+  for (int i = 0; i <= times; i++) {
+      digitalWrite(Led1Pin, LOW);
+      digitalWrite(Led2Pin, LOW);
+      delay(speed);
+      digitalWrite(Led1Pin, HIGH);
+      digitalWrite(Led2Pin, HIGH);
+      delay(speed);
+  }
+}
+
+byte getBattPercent(){
+  int counts = analogRead(VbatPin);
+  int mv = map(counts, 860, 1023, 3660, 4320);
+  int localPercent;
+  if (mv > 4200){
+    localPercent = 100;
+  }
+  else if(mv > 3870){
+    localPercent = map(mv, 3870, 4200, 70, 100);
+  }
+  else if(mv > 3680)
+  {
+    localPercent = map(mv, 3680, 3870, 20, 70);
+  }
+  else{
+    localPercent = 0;
+  }
+  batteryPercent = (batteryPercent * 9 + localPercent) / 10;
+  return map(batteryPercent, 0, 100, 0, 255);
 }
