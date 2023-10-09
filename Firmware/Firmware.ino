@@ -28,7 +28,7 @@
 MPU9250 IMU;                                // IMU type
 
 //#define RIGHT_CONTROLLER                    // Leave the desired controller role uncommented to set.
-//#define LEFT_CONTROLLER
+#define LEFT_CONTROLLER
 
 #define BatLevelMax         990
 #define JoyXMin             0             //These values are for PS4 analog sticks
@@ -170,11 +170,11 @@ void setup() {
 
 #ifdef SERIAL_DEBUG
   Serial.begin(38400);
-  Serial.println("[INFO]\tSerial debug active.");
+  debugPrintln("[INFO]\tSerial debug active.");
   #ifdef RIGHT_CONTROLLER
-  Serial.println("[INFO]\tController role: RIGHT");
+  debugPrintln("[INFO]\tController role: RIGHT");
   #else
-  Serial.println("[INFO]\tController role: LEFT");
+  debugPrintln("[INFO]\tController role: LEFT");
   #endif
 #endif
 
@@ -189,29 +189,29 @@ void setup() {
   int err = IMU.init(calib, IMU_ADDRESS);
   if (err != 0)
   {
-    Serial.print("[ERROR]\t Couldn't initialize IMU of type: ");
-    Serial.print(IMU.IMUType());
-    Serial.print(", Got error: ");
-    Serial.println(err);
+    debugPrint("[ERROR]\t Couldn't initialize IMU of type: ");
+    debugPrint(IMU.IMUType());
+    debugPrint(", Got error: ");
+    debugPrintln(err);
     while (true) {
       blinkLEDS(1000, 1, false);
     }
   }
   else{
-    Serial.print("[INFO]\t");
-    Serial.print(IMU.IMUName());
-    Serial.println(" Initialized.");
+    debugPrint("[INFO]\t");
+    debugPrint(IMU.IMUName());
+    debugPrintln(" Initialized.");
   }
   if (!radio.isChipConnected())
   {
-    Serial.println("[ERROR]\tCould not initialize NRF24L01");
+    debugPrintln("[ERROR]\tCould not initialize NRF24L01");
     while (true) {
       blinkLEDS(200, 1, false);
     }
   }
   else
   {
-    Serial.println("[INFO]\tNRF24L01 Initialized.");
+    debugPrintln("[INFO]\tNRF24L01 Initialized.");
   }
 
   EEPROM.get(210, calib);
@@ -219,7 +219,7 @@ void setup() {
   bool calDone = !calib.valid;                             //check if calibration values are on flash
   while (calDone)
   {
-    Serial.println("[INFO]\tCalibration not done!");
+    debugPrintln("[INFO]\tCalibration not done!");
     if (!digitalRead(ModePin))
     {
       calDone = false;
@@ -229,11 +229,11 @@ void setup() {
   if (!digitalRead(ModePin)) {
     if (!digitalRead(MenuPin)) {
       blinkLEDS(500, 1, false);
-      Serial.println("[INFO]\tAccelerometer and gyroscope calibration mode.");
-      Serial.println("[INFO]\tKeep IMU completely still on flat and level surface.");
+      debugPrintln("[INFO]\tAccelerometer and gyroscope calibration mode.");
+      debugPrintln("[INFO]\tKeep IMU completely still on flat and level surface.");
       delay(8000);
       IMU.calibrateAccelGyro(&calib);
-      Serial.println("[INFO]\tAccel & Gyro calibration complete!");
+      debugPrintln("[INFO]\tAccel & Gyro calibration complete!");
 
       if (!IMU.hasMagnetometer()) {
         calib.valid = true;
@@ -243,18 +243,18 @@ void setup() {
     else {
       if (IMU.hasMagnetometer()) {
         blinkLEDS(500, 2, false);
-        Serial.println("[INFO]\tMagnetic calibration mode.");
-        Serial.println("[INFO]\tMove IMU in figure 8 until done.");
+        debugPrintln("[INFO]\tMagnetic calibration mode.");
+        debugPrintln("[INFO]\tMove IMU in figure 8 until done.");
         delay(3000);
         IMU.calibrateMag(&calib);
         calib.valid = true;
-        Serial.println("[INFO]\tMagnetic calibration complete!");
+        debugPrintln("[INFO]\tMagnetic calibration complete!");
         delay(1000);
         blinkLEDS(500, 1, false);
       }
     }
     printCalibration();
-    Serial.println("[INFO]\tWriting values to EEPROM!");
+    debugPrintln("[INFO]\tWriting values to EEPROM!");
     EEPROM.put(210, calib);
     delay(3000);
   }
@@ -282,8 +282,8 @@ void setup() {
   err = IMU.init(calib, IMU_ADDRESS);
   if (err != 0)
   {
-    Serial.print("[ERROR]\tIMU ERROR: ");
-    Serial.println(err);
+    debugPrint("[ERROR]\tIMU ERROR: ");
+    debugPrintln(err);
     while (true);
   }
 
@@ -401,35 +401,35 @@ void loop()
 }
 void printCalibration()
 {
-  Serial.println("[INFO]\tAccel biases X/Y/Z: ");
-  Serial.print("[INFO]\t");
-  Serial.print(calib.accelBias[0]);
-  Serial.print(", ");
-  Serial.print(calib.accelBias[1]);
-  Serial.print(", ");
-  Serial.println(calib.accelBias[2]);
-  Serial.println("[INFO]\tGyro biases X/Y/Z: ");
-  Serial.print("[INFO]\t");
-  Serial.print(calib.gyroBias[0]);
-  Serial.print(", ");
-  Serial.print(calib.gyroBias[1]);
-  Serial.print(", ");
-  Serial.println(calib.gyroBias[2]);
+  debugPrintln("[INFO]\tAccel biases X/Y/Z: ");
+  debugPrint("[INFO]\t");
+  debugPrint(calib.accelBias[0]);
+  debugPrint(", ");
+  debugPrint(calib.accelBias[1]);
+  debugPrint(", ");
+  debugPrintln(calib.accelBias[2]);
+  debugPrintln("[INFO]\tGyro biases X/Y/Z: ");
+  debugPrint("[INFO]\t");
+  debugPrint(calib.gyroBias[0]);
+  debugPrint(", ");
+  debugPrint(calib.gyroBias[1]);
+  debugPrint(", ");
+  debugPrintln(calib.gyroBias[2]);
   if (IMU.hasMagnetometer()) {
-    Serial.println("[INFO]\tMag biases X/Y/Z: ");
-    Serial.print("[INFO]\t");
-    Serial.print(calib.magBias[0]);
-    Serial.print(", ");
-    Serial.print(calib.magBias[1]);
-    Serial.print(", ");
-    Serial.println(calib.magBias[2]);
-    Serial.println("[INFO]\tMag Scale X/Y/Z: ");
-    Serial.print("[INFO]\t");
-    Serial.print(calib.magScale[0]);
-    Serial.print(", ");
-    Serial.print(calib.magScale[1]);
-    Serial.print(", ");
-    Serial.println(calib.magScale[2]);
+    debugPrintln("[INFO]\tMag biases X/Y/Z: ");
+    debugPrint("[INFO]\t");
+    debugPrint(calib.magBias[0]);
+    debugPrint(", ");
+    debugPrint(calib.magBias[1]);
+    debugPrint(", ");
+    debugPrintln(calib.magBias[2]);
+    debugPrintln("[INFO]\tMag Scale X/Y/Z: ");
+    debugPrint("[INFO]\t");
+    debugPrint(calib.magScale[0]);
+    debugPrint(", ");
+    debugPrint(calib.magScale[1]);
+    debugPrint(", ");
+    debugPrintln(calib.magScale[2]);
   }
   delay(5000);
 }
@@ -476,4 +476,25 @@ byte getBattPercent(){
   }
   batteryPercent = (batteryPercent * 9 + localPercent) / 10;
   return map(batteryPercent, 0, 100, 0, 255);
+}
+
+void debugPrint(String arg) {
+#ifdef SERIAL_DEBUG
+  Serial.print(arg);
+#endif
+}
+void debugPrint(int arg) {
+#ifdef SERIAL_DEBUG
+  Serial.print(arg);
+#endif
+}
+void debugPrintln(String arg) {
+#ifdef SERIAL_DEBUG
+  Serial.println(arg);
+#endif
+}
+void debugPrintln(int arg) {
+#ifdef SERIAL_DEBUG
+  Serial.println(arg);
+#endif
 }
