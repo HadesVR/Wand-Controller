@@ -2,62 +2,49 @@
 
 The HadesVR wand controllers are a DIY set of controllers that aim to emulate the functionality of the original Vive Wand controllers (and maybe more in the future).
 
-They're made out of 3d printable shells (Not out yet) and a custom PCB board that comes with both controllers and a [HadesVR Basic HMD PCB](https://github.com/HadesVR/Basic-HMD-PCB) to get you started with DIY VR. These boards were designed to be easy to put together, using only through hole parts and commonly available modules.
+They're made out of a custom PCB board that comes with two controllers to get you started with DIY VR. These boards were designed to be easy to put together, using only through hole parts and commonly available modules.
 
-You can get the Controller + HMD combo boards made on [PCBWay](https://www.pcbway.com/setinvite.aspx?inviteid=398979) for 5$ + shipping since the board is under 100mmx100mm. You can also get 5$ off if you're signing up for the first time which means you'd only be paying for shipping. I also get a small kick back at no expense of yours if you use the referral link from above, supporting the project.
+These controllers are meant to be combined with the [HadesVR Basic HMD PCB](https://github.com/HadesVR/Basic-HMD-PCB), since they're both easy to put together and make for an easy-ish way to get into DIY VR hardware.
 
-The boards use an atmega328p as their core, an MPU9250 as the IMU and an NRF24L01 to transmit all data to the headset, there is planned support for some basic individual finger tracking but as of right now it is not supported. The controllers also have 3 spare GPIO pins that support PWM (pins mapped to PD3,PD5 and PD6) for tinkerers that want to add extra features like an RGB LED or even individual finger tracking.
+These controllers are ***not bluetooth***, you absolutely need something to receive the RF data from these, either a [HadesVR Basic HMD PCB](https://github.com/HadesVR/Basic-HMD-PCB) or an RF receiver (take a look at the HadesVR docs for that one).
+
+The boards use an Arduino pro mini 3.3v as their core, any IMU supported by the FastIMU library and an NRF24L01 to transmit all data to the headset, there is planned support for some basic individual finger tracking but as of right now it is not supported. The controllers also have 3 spare GPIO pins for tinkerers that want to add extra features like an RGB LED or even individual finger tracking.
 
 ![1](img/1.png)
-
-# IMPORTANT NOTICE
-If you've had these boards made before JAN/2022 and they weren't working properly or at all 
-* check if they're running the latest firmware and you're running the latest driver version
-* solder a jumper wire between the ground pin of the regulator and the R3/R7 resistor. there's a bit of an error on the board files prior to JAN/2022 in which your MCU/3.3v regulator might not be properly grounded. The jumper cable has to be wired like this:
-
-![WARNING](img/WARNING.png)
 
 
 ## Hardware needed
 
 Hardware needed for each controller is the following:
 
-| Component | Purpose | Notes | Amount |PCB Marking|
+| Component | Purpose | Notes | Amount per controller |PCB Marking|
 | --------- | ----------- | ----- | ------ |------|
-| Atmega328p DIP package | Brains of the controller | - | 1 |U1 or U5|
-| MPU9250 Module*  | Used to gather rotation data | The IMU should sit flat against the pcb, this means you'll need to remove the black spacers on the pin headers after soldering them to the IMU. | 1 | U3 or U13|
-| NRF24L01 Module | Used to communicate with the headset. | - | 1 | U4 or U12
-| TP4056 Module with protection | In charge of battery management | you can get the USB-C version if you want to just make sure it has the built in battery protection circuit | 1 | No marking, bottom edge|
-| HT7533 voltage regulator** | Used to regulate voltage for the IMU and RF receiver | HT7333 or MCP1700-3302E are also compatible. | 1 | U7 or U14 if reusing IMU regulator. Right next to it for Through hole.|
-| PS4 Analog stick | Main joystick | Xbox One analog stick ***might*** also fit but I haven't tested it. | 1 | U2 or U11|
+| Arduino pro mini 3.3v/8mhz | Brains of the controller |  ***NEEDS TO BE THE 3.3V VERSION*** | 1 |U1|
+| IMU  | Used to gather rotation data | Any IMU supported by the FastIMU library. Make sure to line the 3.3v, GND, SDA and SCL pins with the ones of your IMU if it's not the standard shape. The IMU should sit flat against the pcb, this means you'll need to remove the black spacers on the pin headers after soldering them to the IMU. | 1 | U2|
+| NRF24L01 Module | Used to communicate with the headset. | You might have to isolate the crystal pins from the IMU with electrical tape. | 1 | U3
+| TP4056 Module with protection | In charge of battery management | USB-C version recommended. Make sure it has the built in battery protection circuit | 1 | TP4056 bottom edge|
+| HT7533 voltage regulator* | Used to regulate voltage for the IMU and RF receiver | HT7333 or MCP1700-3302E are also compatible. | 1 | No marking, right below 3v3 pad.|
+| PS4 Analog stick | Main Analog stick | Xbox One analog stick ***might*** also fit but I haven't tested it. | 1 | U6 |
 | 18650 battery holder | PCB mount preferred | The one with cables will also work but you'll have to solder to the battery points on the bottom right of the board | 1 | Back of the board |
 | 18650 battery | The battery | Try to get original cells, the battery life of your controller depends on it, and if you get bad cells that lie about their capacity (ultrafire) you might need to change the charge current resistor on your TP4056. | 1 | - |
-| 6x6 tact switch| Used to calibrate the magnetometer or switch between trackpad modes. | Also used for the trigger/grip buttons | 3 | Middle "DRIFT" button|
+| 6x6 tact switch| Used to calibrate the magnetometer or switch between trackpad modes. | Also used for the trigger/grip buttons | 3 | Middle "MODE" button|
 | 7x7 rubber dome switch| Menu and System button switches. | [These](Files/KLS7-TS7703.pdf) are the ones I used, you can find them in bulk on aliexpress for cheap | 2 | Menu and Sys buttons. |
-| 5mm High brightness LED*** | Used for 6dof tracking | - | 1 |LED|
-| LED Resistor*** | Used to limit the current for the LED, it's value depends on the color of the LED | 1/4w | 1 |RLED|
-| 1kΩ Resistor | Used in the resistor divider for battery level monitoring | 1/4w | 1 |R1 or R8|
-| 3.3kΩ Resistor | Used in the resistor divider for battery level monitoring | 1/4w | 1 |R3 or R7|
-| 10kΩ Resistor | RESET line pullup | 1/4w | 1 |R2 or R9|
-| 100nF capacitor | Used to smooth out the input and output regulator voltage. | - | 2 | C1 and C2 or C7 and C8 |
-| 22pF capacitor | Used for the crystal oscillator. | - | 2 | C5 and C6 or C9 and C10|
-| 12MHz crystal | Main crystal for the MCU | if you can't get a 12MHz one, a 16MHz one ***might*** work. | 1 | X1 or X2 |
-| 1x5 male pin header | For ICSP | ***This one goes on the bottom of the board right next to the battery and you should solder it before the NRF24*** | 1 | ICSP |
+| 5mm High brightness LED** | Used for 6dof tracking | - | 2 |LED1 and LED2|
+| LED Resistor** | Used to limit the current for the LED, it's value depends on the color of the LED | 1/4w | 1 |RLED1 and RLED2|
+| 1kΩ Resistor | Used in the resistor divider for battery level monitoring | 1/4w | 1 |R1|
+| 3.3kΩ Resistor | Used in the resistor divider for battery level monitoring | 1/4w | 1 |R2|
+| 470nF capacitor | Used to smooth out the output regulator voltage. | - | 1 | C1 |
 | PCB Switch | To turn on and off the controller. | - | 1 | SW1 or SW2 |
 | White ping pong ball | Used to difuse the LED's light for 6dof tracking | Any will do as long as it's white and 40mm in diameter | 1 |
 
-*BNO085 is better but also more expensive and I haven't written any code for it.
-
-#### **Regulator stuff:
+#### *Regulator stuff:
 You can reuse the one that comes with your MPU9250 in case you can't source any of the through hole regulator options.  However, for that you'll need to do some SMD soldering. **This is completly optional, if you can get the through hole regulators you won't need to do this at all and you can just leave the SMD footprint unpopulated. Do not solder both regulators at once, It's either one or the other.**
-
-If you're comfortable with SMD soldering, you can desolder the 5 pin regulator from the IMU and solder it in the footprint marked U7 or U14. You'll also need to bridge the two pads in the IMU that are next to where the regulator (used to) sit:
 
 ![4](img/4.png)
 
 After doing this you can simply leave the through hole regulator footprint unpopulated, the regulator that comes with the IMU is capable to deliver enough current to power the controller.
 
-***The LEDs for each controller should be a different color, I recommend Blue for the right hand and Red for the left hand, the resistor value is calculated with a supply of 3.3v and an LED current of 18mA:
+**The LEDs for each controller have to be different colors, I recommend Blue for the right hand and Red for the left hand, the resistor value is calculated with a supply of 3.3v and an LED current of 18mA:
 For the Red LED you'll need a 68Ω resistor
 For the Blue LED you'll need a 12Ω resistor
 
