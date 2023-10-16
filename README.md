@@ -45,7 +45,7 @@ Before buying the Arduino it's important you consult the table below to know if 
 
 ![NO](img/NO.png)
 
-A revision 2.2 will be made eventually that will add support for the second to last one and partial support for the second.
+A revision 2.2 will be made eventually that will add partial support for the second type of Arduino, however it will not have battery level monitoring.
 
 #### *Regulator stuff:
 You can reuse the one that comes with your IMU ***only if it's one of the blue MPUXXXX ones with the tantalum capacitor***.
