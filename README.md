@@ -40,8 +40,7 @@ Hardware needed for each controller is the following:
 
 #### Arduino pro mini
 The center piece of this controller is the Arduino pro mini 3.3v, 8mhz. This controller will most likely not work if you put in a 5v version of the arduino as running the crystal at 16mhz at 3.3v (and less) is *fairly out of spec*.
-Moreover, for some ***stupid*** reason there's a few different hardware variants of the arduino pro mini that move some of the analog pins around or straight up don't have them (yay, sounds like fun.)
-
+Moreover, for some ***stupid*** reason there's a few different hardware variants of the arduino pro mini that move some of the analog pins around or straight up don't have them (yay, fun)
 Before buying the Arduino it's important you consult the table below to know if the arduino is compatible, since the A6 and A7 pins are used for the trigger and one of the analog stick axis.
 
 ![NO](img/NO.png)
@@ -71,7 +70,7 @@ A USB to Serial adapter and some breadboard cables to upload code to the control
 ## Assembly
 ⚠️ Before starting you should test your IMU using the FastIMU library examples.
 
-⚠️ Don't solder pins to the Arduino pro micro's programming header, only solder in the necessary pins that go on the board. if you put right angle pins on the programming header you'll have a bad time soldering in the battery connector, and if you put in straight pins they'll stick up too far.
+⚠️ Don't solder pins to the Arduino pro mini's programming header, only solder in the necessary pins that go on the board. if you put right angle pins on the programming header you'll have a bad time soldering in the battery connector, and if you put in straight pins they'll stick up too far.
 
 Solder in your IMU first, ***Check that the pins match, make sure the IMU's SDA goes to SDA, SCL goes to SCL, GND goes to GND and 3V3 or VCC go to VCC.*** This is important, some IMU's have a VCC pin AND a 3.3V pin, in those cases you need to match the 3.3v pin to VCC <u>AND CANNOT USE THE IMU'S REGULATOR TO POWER THE CONTROLLER</u>
 
