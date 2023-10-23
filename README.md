@@ -28,7 +28,7 @@ Hardware needed for each controller is the following:
 | 18650 battery holder | PCB mount preferred | The one with cables will also work but you'll have to solder to the battery points on the bottom right of the board | 1 | Back of the board |
 | 18650 battery | The battery | Try to get original cells, the battery life of your controller depends on it, and if you get bad cells that lie about their capacity (ultrafire) you might need to change the charge current resistor on your TP4056. | 1 | - |
 | 6x6 tact switch| Used to calibrate the magnetometer or switch between trackpad modes. | Also used for the trigger/grip buttons | 3 | Middle "MODE" button|
-| 7x7 rubber dome switch| Menu and System button switches. | [These](Files/KLS7-TS7703.pdf) are the ones I used, you can find them in bulk on aliexpress for cheap | 2 | Menu and Sys buttons. |
+| 7x7 rubber dome switch| Menu and System button switches. | [These](Hardware/PCB/KLS7-TS7703.pdf) are the ones I used, you can find them in bulk on aliexpress for cheap | 2 | Menu and Sys buttons. |
 | 5mm High brightness LED** | Used for 6dof tracking | - | 2 |LED1 and LED2|
 | LED Resistor** | Used to limit the current for the LED, it's value depends on the color of the LED | 1/4w | 1 |RLED1 and RLED2|
 | 1kΩ Resistor | Used in the resistor divider for battery level monitoring and as a pull up for the trigger | 1/4w | 2 |R1|
