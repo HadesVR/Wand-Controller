@@ -3,7 +3,8 @@
 The HadesVR wand controllers are a DIY set of controllers that aim to emulate the functionality of the original Vive Wand controllers (and maybe more in the future).
 
 They're made out of a custom PCB board that comes with two controllers to get you started with DIY VR. These boards were designed to be easy to put together, using only through hole parts and commonly available modules.
-The boards are also panelized, which means you'll be getting 3 controllers per board. 
+The gerbers for the boards are inside the Hardware/PCB folder, inside there there's three gerber files, 1x1 (not panelized), 2x1 (two controller boards on a single panel) and 3x1 (three controller boards on a single panel). Some PCB fabs can charge extra for panelized files so just in case you can simply submit the non panel version and avoid extra charges.
+Even without the panelized boards you'll still get 5 controler boards per order (since that's usually their minimum order quantity) and get 10 or 15 if you go with the other options.
 
 These controllers are meant to be combined with the [HadesVR Basic HMD PCB](https://github.com/HadesVR/Basic-HMD-PCB), since they're both easy to put together and make for an easy-ish way to get into DIY VR hardware.
 
