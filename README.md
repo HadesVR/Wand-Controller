@@ -70,9 +70,14 @@ A USB to Serial adapter and some breadboard cables to upload code to the control
 #### You'll also need the 3d printable shell which isn't out yet.
 
 ## Assembly
+
+### ⚠️If you've got a Rev 2.1 board, you need to solder the voltage regulator in the *opposite direction* to what is on the silkscreen, this is due to an error with the footprint in that specific hardware version. Rev 2.2 boards fix this mistake.
+
 ⚠️ Before starting you should test your IMU using the FastIMU library examples.
 
 ⚠️ Don't solder pins to the Arduino pro mini's programming header, only solder in the necessary pins that go on the board. if you put right angle pins on the programming header you'll have a bad time soldering in the battery connector, and if you put in straight pins they'll stick up too far.
+
+⚠️Both the Basic HMD and Wand Controllers are missing the 3d printable parts right now.
 
 Solder in your IMU first, ***Check that the pins match, make sure the IMU's SDA goes to SDA, SCL goes to SCL, GND goes to GND and 3V3 or VCC go to VCC.*** This is important, some IMU's have a VCC pin AND a 3.3V pin, in those cases you need to match the 3.3v pin to VCC <u>AND CANNOT USE THE IMU'S REGULATOR TO POWER THE CONTROLLER</u>
 
